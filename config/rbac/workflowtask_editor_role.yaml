@@ -1,0 +1,24 @@
+# permissions for end users to edit workflowtasks.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workflowtask-editor-role
+rules:
+- apiGroups:
+  - nirmata-workflow.nirmata.io
+  resources:
+  - workflowtasks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nirmata-workflow.nirmata.io
+  resources:
+  - workflowtasks/status
+  verbs:
+  - get

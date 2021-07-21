@@ -1,0 +1,20 @@
+# permissions for end users to view workflowtasks.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workflowtask-viewer-role
+rules:
+- apiGroups:
+  - nirmata-workflow.nirmata.io
+  resources:
+  - workflowtasks
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - nirmata-workflow.nirmata.io
+  resources:
+  - workflowtasks/status
+  verbs:
+  - get
