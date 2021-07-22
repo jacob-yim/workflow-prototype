@@ -1,4 +1,4 @@
-domain: nirmata.com
+domain: workflow
 layout:
 - go.kubebuilder.io/v3
 projectName: workflow-prototype
@@ -7,8 +7,8 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: nirmata.com
-  group: nirmata.com
+  domain: workflow
+  group: workflow
   kind: WorkflowTask
   path: github.com/jacob-yim/workflow-prototype/api/v1
   version: v1

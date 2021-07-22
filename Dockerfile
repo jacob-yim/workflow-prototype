@@ -11,7 +11,7 @@ RUN go mod download
 
 # Copy the go source
 COPY main.go main.go
-COPY pkg/api/nirmata.com/ pkg/api/nirmata.com/
+COPY pkg/api/workflow/ pkg/api/workflow/
 COPY controllers/ controllers/
 
 # Build

@@ -21,4 +21,4 @@ ${CODEGEN_PKG}/generate-groups.sh \
     "deepcopy,client" \
     ${NIRMATA_PKG}/pkg/client \
     ${NIRMATA_PKG}/pkg/api \
-    "nirmata.com:v1"
+    "workflow:v1"

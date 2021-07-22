@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/nirmata.com/v1"
+	v1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

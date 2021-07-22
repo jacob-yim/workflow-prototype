@@ -21,7 +21,7 @@ package versioned
 import (
 	"fmt"
 
-	nirmatav1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/nirmata.com/v1"
+	workflowv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -29,19 +29,19 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	NirmataV1() nirmatav1.NirmataV1Interface
+	WorkflowV1() workflowv1.WorkflowV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	nirmataV1 *nirmatav1.NirmataV1Client
+	workflowV1 *workflowv1.WorkflowV1Client
 }
 
-// NirmataV1 retrieves the NirmataV1Client
-func (c *Clientset) NirmataV1() nirmatav1.NirmataV1Interface {
-	return c.nirmataV1
+// WorkflowV1 retrieves the WorkflowV1Client
+func (c *Clientset) WorkflowV1() workflowv1.WorkflowV1Interface {
+	return c.workflowV1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -65,7 +65,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.nirmataV1, err = nirmatav1.NewForConfig(&configShallowCopy)
+	cs.workflowV1, err = workflowv1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.nirmataV1 = nirmatav1.NewForConfigOrDie(c)
+	cs.workflowV1 = workflowv1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -90,7 +90,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.nirmataV1 = nirmatav1.New(c)
+	cs.workflowV1 = workflowv1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

@@ -1,4 +1,4 @@
-apiVersion: nirmata.com.nirmata.com/v1
+apiVersion: workflow.nirmata.com/v1
 kind: WorkflowTask
 metadata:
   name: workflowtask-sample

@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned"
-	nirmatav1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/nirmata.com/v1"
-	fakenirmatav1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/nirmata.com/v1/fake"
+	workflowv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
+	fakeworkflowv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -76,7 +76,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// NirmataV1 retrieves the NirmataV1Client
-func (c *Clientset) NirmataV1() nirmatav1.NirmataV1Interface {
-	return &fakenirmatav1.FakeNirmataV1{Fake: &c.Fake}
+// WorkflowV1 retrieves the WorkflowV1Client
+func (c *Clientset) WorkflowV1() workflowv1.WorkflowV1Interface {
+	return &fakeworkflowv1.FakeWorkflowV1{Fake: &c.Fake}
 }

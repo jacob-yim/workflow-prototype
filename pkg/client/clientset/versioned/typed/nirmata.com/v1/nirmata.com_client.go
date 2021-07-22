@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/nirmata.com/v1"
+	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
 	"github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -29,7 +29,7 @@ type NirmataV1Interface interface {
 	WorkflowTasksGetter
 }
 
-// NirmataV1Client is used to interact with features provided by the nirmata.com group.
+// NirmataV1Client is used to interact with features provided by the workflow group.
 type NirmataV1Client struct {
 	restClient rest.Interface
 }
