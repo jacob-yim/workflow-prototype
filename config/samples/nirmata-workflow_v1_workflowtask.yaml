@@ -1,7 +1,0 @@
-apiVersion: nirmata-workflow.nirmata.io/v1
-kind: WorkflowTask
-metadata:
-  name: workflowtask-sample
-spec:
-  # Add fields here
-  foo: bar

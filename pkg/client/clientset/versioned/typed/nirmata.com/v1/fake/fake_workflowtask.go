@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	nirmatacomv1 "github.com/jacob-yim/workflow-prototype/pkg/apis/nirmata.com/v1"
+	nirmatacomv1 "github.com/jacob-yim/workflow-prototype/pkg/api/nirmata.com/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

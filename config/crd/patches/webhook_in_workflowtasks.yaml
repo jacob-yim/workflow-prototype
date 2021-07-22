@@ -2,7 +2,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: workflowtasks.nirmata-workflow.nirmata.io
+  name: workflowtasks.nirmata.com.nirmata.com
 spec:
   conversion:
     strategy: Webhook

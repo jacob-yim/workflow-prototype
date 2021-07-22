@@ -31,8 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	nirmataworkflowv1 "nirmata-workflow/api/v1"
-	"nirmata-workflow/controllers"
+	nirmatacomv1 "github.com/jacob-yim/workflow-prototype/pkg/api/nirmata.com/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -44,7 +43,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(nirmataworkflowv1.AddToScheme(scheme))
+	utilruntime.Must(nirmatacomv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -71,20 +70,13 @@ func main() {
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "41450e47.nirmata.io",
+		LeaderElectionID:       "5521c828.nirmata.com",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.WorkflowTaskReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "WorkflowTask")
-		os.Exit(1)
-	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

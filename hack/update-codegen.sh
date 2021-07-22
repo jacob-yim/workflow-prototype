@@ -20,5 +20,5 @@ NIRMATA_PKG=${NIRMATA_ROOT#"${GOPATH}/src/"}
 ${CODEGEN_PKG}/generate-groups.sh \
     "deepcopy,client" \
     ${NIRMATA_PKG}/pkg/client \
-    ${NIRMATA_PKG}/pkg/apis \
+    ${NIRMATA_PKG}/pkg/api \
     "nirmata.com:v1"

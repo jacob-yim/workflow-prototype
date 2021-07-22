@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/jacob-yim/workflow-prototype/pkg/apis/nirmata.com/v1"
+	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/nirmata.com/v1"
 	"github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )

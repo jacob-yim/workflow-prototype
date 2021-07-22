@@ -1,16 +1,15 @@
-domain: nirmata.io
+domain: nirmata.com
 layout:
 - go.kubebuilder.io/v3
-projectName: nirmata-workflow
-repo: nirmata-workflow
+projectName: workflow-prototype
+repo: github.com/jacob-yim/workflow-prototype
 resources:
 - api:
     crdVersion: v1
     namespaced: true
-  controller: true
-  domain: nirmata.io
-  group: nirmata-workflow
+  domain: nirmata.com
+  group: nirmata.com
   kind: WorkflowTask
-  path: nirmata-workflow/api/v1
+  path: github.com/jacob-yim/workflow-prototype/api/v1
   version: v1
 version: "3"

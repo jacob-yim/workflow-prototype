@@ -8,4 +8,4 @@ webhook:
   port: 9443
 leaderElection:
   leaderElect: true
-  resourceName: 41450e47.nirmata.io
+  resourceName: 5521c828.nirmata.com
