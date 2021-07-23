@@ -7,7 +7,7 @@ spec:
   metadata:
     name: metadata-name
 status:
-  state: running
+  state: Pending
   startTimeUTC: 12:00 am
   completionTimeUTC: 12:00 pm
   executor: testExecutor
