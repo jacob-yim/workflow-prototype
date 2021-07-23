@@ -1,7 +1,14 @@
-apiVersion: workflow.nirmata.com/v1
+apiVersion: nirmata.com/v1
 kind: WorkflowTask
 metadata:
   name: workflowtask-sample
 spec:
-  # Add fields here
-  foo: bar
+  type: testType
+  metadata:
+    name: metadata-name
+status:
+  state: running
+  startTimeUTC: 12:00 am
+  completionTimeUTC: 12:00 pm
+  executor: testExecutor
+  error: None

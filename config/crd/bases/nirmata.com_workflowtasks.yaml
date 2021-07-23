@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: workflowtasks.workflow.nirmata.com
+  name: workflowtasks.nirmata.com
 spec:
-  group: workflow.nirmata.com
+  group: nirmata.com
   names:
     kind: WorkflowTask
     listKind: WorkflowTaskList

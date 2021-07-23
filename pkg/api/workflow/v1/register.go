@@ -1,5 +1,5 @@
 //+kubebuilder:object:generate=true
-//+groupName=workflow.nirmata.com
+//+groupName=nirmata.com
 package v1
 
 import (
