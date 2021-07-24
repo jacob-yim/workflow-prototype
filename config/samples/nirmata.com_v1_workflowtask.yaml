@@ -6,9 +6,3 @@ spec:
   type: testType
   metadata:
     name: metadata-name
-status:
-  state: Pending
-  startTimeUTC: 12:00 am
-  completionTimeUTC: 12:00 pm
-  executor: testExecutor
-  error: None

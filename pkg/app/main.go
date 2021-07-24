@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"time"
 
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
 	cs "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned"
@@ -36,38 +37,46 @@ func main() {
 	dispatch := make(chan *v1.WorkflowTask)
 
 	// start dummy executor
-	go dummyExecutor(dispatch, api)
+	go dummyExecutor(dispatch, api, "testType")
 
 	// handle watch events
 	for {
 		event := <-events
-		workflowtask, ok := event.Object.(*v1.WorkflowTask)
+		task, ok := event.Object.(*v1.WorkflowTask)
 		if !ok {
 			panic("Could not cast to WorkflowTask")
 		}
 
+		// change task State to pending
+		task.Status.State = v1.StatePending
+		api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+
+		// dispatch task
 		if event.Type == "ADDED" {
-			dispatch <- workflowtask
+			dispatch <- task
 		}
 	}
 }
 
-func dummyExecutor(dispatch chan *v1.WorkflowTask, api clientv1.WorkflowTaskInterface) {
-	executorType := "testType"
-
+func dummyExecutor(dispatch chan *v1.WorkflowTask, api clientv1.WorkflowTaskInterface, executorType string) {
 	for {
 		task := <-dispatch
-		taskType := task.Status.State
+		taskType := task.Spec.Type
 
+		// check that task type matches executor
 		if taskType == executorType {
 			task.Status.State = v1.StateExecuting
 			api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-			fmt.Println("Performing test task")
+			fmt.Println("Task executing...")
 
+			//simulate execution
+			time.Sleep(1 * time.Second)
+
+			fmt.Println("Task completed")
 			task.Status.State = v1.StateCompleted
 			api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-
 		} else {
+			// send task to a different executor
 			dispatch <- task
 		}
 	}
