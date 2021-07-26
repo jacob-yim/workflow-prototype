@@ -25,7 +25,7 @@ func main() {
 
 	// get WorkflowTasks clientset
 	clientset := cs.NewForConfigOrDie(config)
-	api := clientset.WorkflowV1().WorkflowTasks("")
+	api := clientset.WorkflowV1().WorkflowTasks("default")
 
 	// create watch channel
 	watch, err := api.Watch(context.TODO(), metav1.ListOptions{})
@@ -47,10 +47,6 @@ func main() {
 			panic("Could not cast to WorkflowTask")
 		}
 
-		// change task State to pending
-		task.Status.State = v1.StatePending
-		api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-
 		// dispatch task
 		if event.Type == "ADDED" {
 			dispatch <- task
@@ -64,17 +60,25 @@ func dummyExecutor(dispatch chan *v1.WorkflowTask, api clientv1.WorkflowTaskInte
 		taskType := task.Spec.Type
 
 		// check that task type matches executor
-		if taskType == executorType {
+		if taskType == executorType && task.Status.Executor == "" {
+			task.Status.Executor = "pod name"
 			task.Status.State = v1.StateExecuting
-			api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+			task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+			if err != nil {
+				panic(err.Error())
+			}
+
 			fmt.Println("Task executing...")
 
 			//simulate execution
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			fmt.Println("Task completed")
 			task.Status.State = v1.StateCompleted
-			api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+			task, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+			if err != nil {
+				panic(err.Error())
+			}
 		} else {
 			// send task to a different executor
 			dispatch <- task
