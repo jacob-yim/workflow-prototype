@@ -31,7 +31,7 @@ func main() {
 	clientset := cs.NewForConfigOrDie(config)
 	api := clientset.WorkflowV1().WorkflowTasks("default")
 
-	dispatch := make(chan *v1.WorkflowTask)
+	dispatch := make(chan string)
 
 	// start executors
 	for i := 0; i < EXECUTORS; i++ {
@@ -63,13 +63,15 @@ func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas
 	}
 }
 
-func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.WorkflowTask) {
+func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- string) {
 	// create watch channel
 	watch, err := api.Watch(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
+
 	events := watch.ResultChan()
+
 	for event := range events {
 		task, ok := event.Object.(*v1.WorkflowTask)
 		if !ok {
@@ -78,13 +80,18 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.Workflo
 
 		// dispatch task
 		if event.Type == "ADDED" {
-			dispatch <- task
+			dispatch <- task.Name
 		}
 	}
 }
 
-func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, executorType string) {
-	for task := range dispatch {
+func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, executorType string) {
+	for taskName := range dispatch {
+		task, err := api.Get(context.TODO(), taskName, metav1.GetOptions{})
+		if err != nil {
+			panic(err.Error())
+		}
+
 		if task.Status.Executor == "" {
 			taskType := task.Spec.Type
 
@@ -93,10 +100,9 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 				task.Status.State = v1.StateExecuting
 				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
 				if err != nil {
-					panic(err.Error())
+					//panic(err.Error())
+					continue
 				}
-
-				taskName := task.ObjectMeta.Name
 
 				fmt.Printf("Task %v executing...\n", taskName)
 
@@ -108,12 +114,13 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 				task.Status.State = v1.StateCompleted
 				task, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
 				if err != nil {
-					panic(err.Error())
+					//panic(err.Error())
+					continue
 				}
 
 			} else {
 				// send task to a different executor
-				dispatch <- task
+				dispatch <- taskName
 			}
 		}
 	}
