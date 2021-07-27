@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-const TASKS = 20
+const TASKS = 10
 const EXECUTORS = 3
 
 func main() {
