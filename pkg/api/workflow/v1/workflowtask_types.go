@@ -24,10 +24,9 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 const (
-	StatePending = "PENDING"
 	StateExecuting = "EXECUTING"
 	StateCompleted = "COMPLETED"
-	StateFailed = "FAILED"
+	StateFailed    = "FAILED"
 )
 
 // WorkflowTask is the Schema for the workflowtasks API
@@ -46,17 +45,16 @@ type WorkflowTask struct {
 // WorkflowTaskSpec defines the desired state of WorkflowTask
 type WorkflowTaskSpec struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Type string `json:"type,omitempty"`
+	Type              string `json:"type,omitempty"`
 }
 
 // WorkflowTaskStatus defines the observed state of WorkflowTask
 type WorkflowTaskStatus struct {
-	State string `json:"state,omitempty"`
-	StartTimeUTC string `json:"startTimeUTC,omitempty"`
+	State             string `json:"state,omitempty"`
+	StartTimeUTC      string `json:"startTimeUTC,omitempty"`
 	CompletionTimeUTC string `json:"completionTimeUTC,omitempty"`
-	Executor string `json:"executor,omitempty"`
-	Error string `json:"error,omitempty"`
+	Executor          string `json:"executor,omitempty"`
+	Error             string `json:"error,omitempty"`
 }
 
 // WorkflowTaskList contains a list of WorkflowTask
