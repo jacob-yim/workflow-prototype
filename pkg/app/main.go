@@ -62,6 +62,7 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.Workflo
 
 func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, executorType string) {
 	for task := range dispatch {
+		fmt.Println("app --> task name: " + task.Name)
 		if task.Status.Executor == "" {
 			taskType := task.Spec.Type
 
@@ -70,7 +71,9 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 				task.Status.State = v1.StateExecuting
 				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
 				if err != nil {
-					panic(err.Error())
+					fmt.Println("app can't modify")
+					//panic(err.Error())
+					continue;
 				}
 
 				taskName := task.ObjectMeta.Name
