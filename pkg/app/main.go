@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
@@ -15,7 +14,6 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-const TASKS = 20
 const EXECUTORS = 3
 
 func main() {
@@ -38,29 +36,8 @@ func main() {
 		go taskExecutor(api, dispatch, "testType")
 	}
 
-	// start scheduler
-	go taskScheduler(api, "testType", TASKS)
-
 	// start watcher
 	taskWatcher(api, dispatch)
-}
-
-func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas int) {
-	for i := 0; i < replicas; i++ {
-		taskName := "test-task-" + strconv.Itoa(i)
-
-		task := &v1.WorkflowTask{
-			ObjectMeta: metav1.ObjectMeta{Name: taskName},
-			Spec: v1.WorkflowTaskSpec{
-				Type: taskType,
-			},
-		}
-
-		_, err := api.Create(context.TODO(), task, metav1.CreateOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
-	}
 }
 
 func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.WorkflowTask) {
