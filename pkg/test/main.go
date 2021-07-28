@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+	"log"
 
 	"github.com/google/uuid"
 	"k8s.io/client-go/tools/clientcmd"
@@ -18,7 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const TASKS = 20
+const TASKS = 500
 const EXECUTORS = 3
 
 func main() {
@@ -90,6 +90,7 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- string) {
 }
 
 func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, executorType string) {
+	var taskCount = 0
 	for taskName := range dispatch {
 		task, err := api.Get(context.TODO(), taskName, metav1.GetOptions{})
 		if err != nil {
@@ -111,12 +112,13 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 					continue
 				}
 
-				fmt.Printf("Task %v executing...\n", taskName)
+				log.Printf("Task %v executing...\n", taskName)
 
 				//simulate execution
-				time.Sleep(5 * time.Second)
+				time.Sleep(1 * time.Second)
 
-				fmt.Printf("Task %v completed\n", taskName)
+				log.Printf("Task %v completed\n", taskName)
+				taskCount += 1
 
 				task.Status.State = v1.StateCompleted
 				task, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
@@ -129,5 +131,6 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 				dispatch <- taskName
 			}
 		}
+		log.Print("TASK COUNT ", taskCount)
 	}
 }
