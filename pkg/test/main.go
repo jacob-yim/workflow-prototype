@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,6 +15,7 @@ import (
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
 	cs "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned"
 	clientv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -106,22 +107,26 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 				}
 
 				task.Status.State = v1.StateExecuting
-				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-				if err != nil {
+				_, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+				if _, ok := err.(*errors.StatusError); ok {
 					continue
+				} else if err != nil {
+					panic(err.Error())
 				}
 
-				fmt.Printf("Task %v executing...\n", taskName)
+				log.Printf("Task %v executing...\n", taskName)
 
 				//simulate execution
 				time.Sleep(5 * time.Second)
 
-				fmt.Printf("Task %v completed\n", taskName)
+				log.Printf("Task %v completed\n", taskName)
 
 				task.Status.State = v1.StateCompleted
-				task, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-				if err != nil {
+				_, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+				if _, ok := err.(*errors.StatusError); ok {
 					continue
+				} else if err != nil {
+					panic(err.Error())
 				}
 
 			} else {
