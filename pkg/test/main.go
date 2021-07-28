@@ -120,8 +120,8 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 				//simulate execution
 				time.Sleep(1 * time.Second)
 
-				log.Printf("Task %v completed\n", taskName)
 				taskCount += 1
+				log.Printf("Task %v completed. Total completed: %v\n", taskName, taskCount)
 
 				task.Status.State = v1.StateCompleted
 				_, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
@@ -136,6 +136,5 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 				dispatch <- taskName
 			}
 		}
-		log.Print("TASK COUNT ", taskCount)
 	}
 }
