@@ -19,8 +19,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const TASKS = 500
+const TASKS = 20
 const EXECUTORS = 3
+const EXEC_TIME = 5 // execution time in seconds
 
 func main() {
 	// get config
@@ -118,7 +119,7 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 				log.Printf("Task %v executing...\n", taskName)
 
 				//simulate execution
-				time.Sleep(1 * time.Second)
+				time.Sleep(EXEC_TIME * time.Second)
 
 				taskCount += 1
 				log.Printf("Task %v completed. Executor total: %v\n", taskName, taskCount)
