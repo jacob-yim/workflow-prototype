@@ -3,19 +3,22 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
 	cs "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned"
 	clientv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 )
 
-const TASKS = 10
+const TASKS = 20
 const EXECUTORS = 3
 
 func main() {
@@ -47,7 +50,8 @@ func main() {
 
 func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas int) {
 	for i := 0; i < replicas; i++ {
-		taskName := "test-task-" + strconv.Itoa(i)
+		id := uuid.New()
+		taskName := "test-" + strconv.Itoa(i) + "-" + id.String()
 
 		task := &v1.WorkflowTask{
 			ObjectMeta: metav1.ObjectMeta{Name: taskName},
@@ -96,25 +100,27 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 			taskType := task.Spec.Type
 
 			if taskType == executorType {
-				task.Status.Executor = "pod name"
+				task.Status.Executor, err = os.Hostname()
+				if err != nil {
+					panic(err.Error())
+				}
+
 				task.Status.State = v1.StateExecuting
 				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
 				if err != nil {
-					//panic(err.Error())
 					continue
 				}
 
 				fmt.Printf("Task %v executing...\n", taskName)
 
 				//simulate execution
-				time.Sleep(1 * time.Second)
+				time.Sleep(5 * time.Second)
 
 				fmt.Printf("Task %v completed\n", taskName)
 
 				task.Status.State = v1.StateCompleted
 				task, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
 				if err != nil {
-					//panic(err.Error())
 					continue
 				}
 
