@@ -19,7 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const TASKS = 20
+const TASKS = 10
 const EXECUTORS = 3
 const EXEC_TIME = 5 // execution time in seconds
 
@@ -36,7 +36,7 @@ func main() {
 	clientset := cs.NewForConfigOrDie(config)
 	api := clientset.WorkflowV1().WorkflowTasks("default")
 
-	dispatch := make(chan string)
+	dispatch := make(chan *v1.WorkflowTask)
 
 	// start executors
 	for i := 0; i < EXECUTORS; i++ {
@@ -69,7 +69,7 @@ func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas
 	}
 }
 
-func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- string) {
+func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.WorkflowTask) {
 	// create watch channel
 	watch, err := api.Watch(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -86,31 +86,29 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- string) {
 
 		// dispatch task
 		if event.Type == "ADDED" {
-			dispatch <- task.Name
+			dispatch <- task
 		}
 	}
 }
 
-func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, executorType string) {
+func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, executorType string) {
 	var taskCount = 0
-	for taskName := range dispatch {
-		task, err := api.Get(context.TODO(), taskName, metav1.GetOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
+	for task := range dispatch {
 
 		if task.Status.Executor == "" {
+			taskName := task.Name
 			taskType := task.Spec.Type
 
 			if taskType == executorType {
+				var err error
 				task.Status.Executor, err = os.Hostname()
 				if err != nil {
 					panic(err.Error())
 				}
 
 				task.Status.State = v1.StateExecuting
-				_, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-				if _, ok := err.(*errors.StatusError); ok {
+				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
+				if errors.IsConflict(err) {
 					continue
 				} else if err != nil {
 					panic(err.Error())
@@ -126,7 +124,7 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 
 				task.Status.State = v1.StateCompleted
 				_, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-				if _, ok := err.(*errors.StatusError); ok {
+				if errors.IsConflict(err) {
 					continue
 				} else if err != nil {
 					panic(err.Error())
@@ -134,7 +132,7 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan string, exec
 
 			} else {
 				// send task to a different executor
-				dispatch <- taskName
+				dispatch <- task
 			}
 		}
 	}
