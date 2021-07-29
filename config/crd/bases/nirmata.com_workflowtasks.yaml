@@ -36,8 +36,6 @@ spec:
           spec:
             description: WorkflowTaskSpec defines the desired state of WorkflowTask
             properties:
-              metadata:
-                type: object
               type:
                 type: string
             type: object

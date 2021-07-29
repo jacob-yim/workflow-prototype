@@ -9,14 +9,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
-
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
 	cs "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned"
 	clientv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 const TASKS = 10
@@ -100,10 +99,8 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 			taskType := task.Spec.Type
 
 			if taskType == executorType {
-				var err error
 				executorID := uuid.New()
-				var executorHostname = ""
-				executorHostname, err = os.Hostname()
+				executorHostname, err := os.Hostname()
 				if err != nil {
 					panic(err.Error())
 				}

@@ -44,8 +44,7 @@ type WorkflowTask struct {
 
 // WorkflowTaskSpec defines the desired state of WorkflowTask
 type WorkflowTaskSpec struct {
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Type              string `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 }
 
 // WorkflowTaskStatus defines the observed state of WorkflowTask
