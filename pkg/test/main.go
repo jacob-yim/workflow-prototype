@@ -101,10 +101,13 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 
 			if taskType == executorType {
 				var err error
-				task.Status.Executor, err = os.Hostname()
+				executorID := uuid.New()
+				var executorHostname = ""
+				executorHostname, err = os.Hostname()
 				if err != nil {
 					panic(err.Error())
 				}
+				task.Status.Executor = executorHostname + executorID.String()
 
 				task.Status.State = v1.StateExecuting
 				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
