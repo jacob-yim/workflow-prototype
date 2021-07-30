@@ -4,5 +4,3 @@ metadata:
   name: workflowtask-sample
 spec:
   type: testType
-  metadata:
-    name: metadata-name
