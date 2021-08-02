@@ -91,20 +91,21 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.Workflo
 }
 
 func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, executorType string) {
-	var taskCount = 0
-	for task := range dispatch {
+	executorHostname, err := os.Hostname()
+	if err != nil {
+		panic(err.Error())
+	}
 
+	executorID := executorHostname + uuid.New().String()
+	taskCount := 0
+
+	for task := range dispatch {
 		if task.Status.Executor == "" {
 			taskName := task.Name
 			taskType := task.Spec.Type
 
 			if taskType == executorType {
-				executorID := uuid.New()
-				executorHostname, err := os.Hostname()
-				if err != nil {
-					panic(err.Error())
-				}
-				task.Status.Executor = executorHostname + executorID.String()
+				task.Status.Executor = executorID
 
 				task.Status.State = v1.StateExecuting
 				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
