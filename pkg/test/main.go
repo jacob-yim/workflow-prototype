@@ -3,24 +3,24 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
+	app "github.com/jacob-yim/workflow-prototype/pkg/app"
 	cs "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned"
 	clientv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
 
-const TASKS = 10
+const TASKS = 20
 const EXECUTORS = 3
-const EXEC_TIME = 5 // execution time in seconds
+const EXEC_TIME_SECONDS = 5 // execution time in seconds
+const TIMEOUT_MINUTES = 10  // test timeout in minutes
 
 func main() {
 	// get config
@@ -35,18 +35,21 @@ func main() {
 	clientset := cs.NewForConfigOrDie(config)
 	api := clientset.WorkflowV1().WorkflowTasks("default")
 
-	dispatch := make(chan *v1.WorkflowTask)
+	testTask := app.Task{TaskType: "testType", Execute: executeTestTask}
 
-	// start executors
-	for i := 0; i < EXECUTORS; i++ {
-		go taskExecutor(api, dispatch, "testType")
-	}
+	executors := make([]app.Executor, 1)
+	executors[0] = app.Executor{TaskToExecute: testTask, ThreadPoolSize: 3}
+
+	app.Start(executors)
 
 	// start scheduler
 	go taskScheduler(api, "testType", TASKS)
 
-	// start watcher
-	taskWatcher(api, dispatch)
+	time.Sleep(TIMEOUT_MINUTES * time.Minute)
+}
+
+func executeTestTask(taskResource *v1.WorkflowTask) {
+	time.Sleep(EXEC_TIME_SECONDS * time.Second)
 }
 
 func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas int) {
@@ -65,76 +68,7 @@ func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas
 		if err != nil {
 			panic(err.Error())
 		}
-	}
-}
 
-func taskWatcher(api clientv1.WorkflowTaskInterface, dispatch chan<- *v1.WorkflowTask) {
-	// create watch channel
-	watch, err := api.Watch(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err.Error())
-	}
-
-	events := watch.ResultChan()
-
-	for event := range events {
-		task, ok := event.Object.(*v1.WorkflowTask)
-		if !ok {
-			panic("Could not cast to WorkflowTask")
-		}
-
-		// dispatch task
-		if event.Type == "ADDED" {
-			dispatch <- task
-		}
-	}
-}
-
-func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, executorType string) {
-	executorHostname, err := os.Hostname()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	executorID := executorHostname + uuid.New().String()
-	taskCount := 0
-
-	for task := range dispatch {
-		if task.Status.Executor == "" {
-			taskName := task.Name
-			taskType := task.Spec.Type
-
-			if taskType == executorType {
-				task.Status.Executor = executorID
-
-				task.Status.State = v1.StateExecuting
-				task, err := api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-				if errors.IsConflict(err) {
-					continue
-				} else if err != nil {
-					panic(err.Error())
-				}
-
-				log.Printf("Task %v executing...\n", taskName)
-
-				//simulate execution
-				time.Sleep(EXEC_TIME * time.Second)
-
-				taskCount += 1
-				log.Printf("Task %v completed. Executor total: %v\n", taskName, taskCount)
-
-				task.Status.State = v1.StateCompleted
-				_, err = api.UpdateStatus(context.TODO(), task, metav1.UpdateOptions{})
-				if errors.IsConflict(err) {
-					continue
-				} else if err != nil {
-					panic(err.Error())
-				}
-
-			} else {
-				// send task to a different executor
-				dispatch <- task
-			}
-		}
+		log.Printf("Scheduled task %v\n", taskName)
 	}
 }
