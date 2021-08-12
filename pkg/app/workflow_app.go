@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/google/uuid"
 	v1 "github.com/jacob-yim/workflow-prototype/pkg/api/workflow/v1"
@@ -12,30 +11,18 @@ import (
 	clientv1 "github.com/jacob-yim/workflow-prototype/pkg/client/clientset/versioned/typed/workflow/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
+	"k8s.io/client-go/rest"
 )
 
-type Task struct {
-	Execute  Execution
-	TaskType string
-}
-
 type Executor struct {
-	TaskToExecute  Task
+	Task           Execute
+	TaskType       string
 	ThreadPoolSize int
 }
 
-type Execution func(*v1.WorkflowTask)
+type Execute func(*v1.WorkflowTask)
 
-func Start(executors []Executor) {
-	// get config
-	home := homedir.HomeDir()
-	kubeconfig := filepath.Join(home, ".kube", "config")
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
+func Start(config *rest.Config, executors []Executor) {
 
 	// get WorkflowTasks clientset
 	clientset := cs.NewForConfigOrDie(config)
@@ -45,8 +32,8 @@ func Start(executors []Executor) {
 
 	// start executors
 	for _, exec := range executors {
-		taskToExecute := exec.TaskToExecute
-		taskType := taskToExecute.TaskType
+		taskToExecute := exec.Task
+		taskType := exec.TaskType
 
 		dispatch := make(chan *v1.WorkflowTask)
 		dispatchMap[taskType] = dispatch
@@ -83,7 +70,7 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatchMap map[string]chan
 	}
 }
 
-func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, taskToExecute Task) {
+func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.WorkflowTask, execute Execute) {
 	executorHostname, err := os.Hostname()
 	if err != nil {
 		panic(err.Error())
@@ -108,7 +95,7 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 
 			log.Printf("Task %v executing...\n", taskName)
 
-			taskToExecute.Execute(taskResource)
+			execute(taskResource)
 
 			taskCount += 1
 			log.Printf("Task %v completed. Executor total: %v\n", taskName, taskCount)

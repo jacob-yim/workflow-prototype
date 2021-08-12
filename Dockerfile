@@ -1,27 +1,25 @@
-# Build the manager binary
-FROM golang:1.16 as builder
+##
+## Build
+##
 
-WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
+FROM golang:1.16-buster AS build
+
+COPY . /usr/src/app
+WORKDIR /usr/src/app
 RUN go mod download
 
-# Copy the go source
-COPY main.go main.go
-COPY pkg/api/workflow/ pkg/api/workflow/
-COPY controllers/ controllers/
+RUN go build -o /workflow-app
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
+##
+## Deploy
+##
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/base-debian10
+
 WORKDIR /
-COPY --from=builder /workspace/manager .
-USER 65532:65532
 
-ENTRYPOINT ["/manager"]
+COPY --from=build /workflow-app /workflow-app
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/workflow-app"]

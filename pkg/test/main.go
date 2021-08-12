@@ -18,7 +18,7 @@ import (
 )
 
 const TASKS = 20
-const EXECUTORS = 3
+const THREAD_POOL_SIZE = 3
 const EXEC_TIME_SECONDS = 5 // execution time in seconds
 const TIMEOUT_MINUTES = 10  // test timeout in minutes
 
@@ -35,12 +35,10 @@ func main() {
 	clientset := cs.NewForConfigOrDie(config)
 	api := clientset.WorkflowV1().WorkflowTasks("default")
 
-	testTask := app.Task{TaskType: "testType", Execute: executeTestTask}
-
 	executors := make([]app.Executor, 1)
-	executors[0] = app.Executor{TaskToExecute: testTask, ThreadPoolSize: 3}
+	executors[0] = app.Executor{Task: executeTestTask, TaskType: "testType", ThreadPoolSize: THREAD_POOL_SIZE}
 
-	app.Start(executors)
+	app.Start(config, executors)
 
 	// start scheduler
 	go taskScheduler(api, "testType", TASKS)
