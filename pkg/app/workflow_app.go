@@ -68,8 +68,6 @@ func taskWatcher(api clientv1.WorkflowTaskInterface, dispatchMap map[string]chan
 
 			if dispatch, ok := dispatchMap[taskType]; ok {
 				dispatch <- taskResource
-			} else {
-				log.Printf("No executor found for task of type %v\n", taskType)
 			}
 		}
 	}
@@ -85,8 +83,6 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 
 	for taskResource := range dispatch {
 		if taskResource.Status.Executor == "" {
-			taskName := taskResource.Name
-
 			taskResource.Status.Executor = executorID
 			taskResource.Status.State = v1.StateExecuting
 			taskResource.Status.StartTimeUTC = time.Now().UTC().String()
@@ -98,7 +94,9 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 				panic(err.Error())
 			}
 
-			log.Printf("%v: Task %v executing...\n", executorID, taskName)
+			taskName := taskResource.Name
+			taskType := taskResource.Spec.Type
+			log.Printf("%v: Task %v of type %v executing...\n", executorID, taskName, taskType)
 
 			err = execute(taskResource)
 			if err != nil {
@@ -107,7 +105,7 @@ func taskExecutor(api clientv1.WorkflowTaskInterface, dispatch chan *v1.Workflow
 				taskResource.Status.State = v1.StateFailed
 				taskResource.Status.Error = err.Error()
 			} else {
-				log.Printf("%v: Task %v completed.\n", executorID, taskName)
+				log.Printf("%v: Task %v of type %v completed.\n", executorID, taskName, taskType)
 
 				taskResource.Status.State = v1.StateCompleted
 				taskResource.Status.CompletionTimeUTC = time.Now().UTC().String()
