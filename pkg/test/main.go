@@ -46,14 +46,16 @@ func main() {
 	time.Sleep(TIMEOUT_MINUTES * time.Minute)
 }
 
-func executeTestTask(taskResource *v1.WorkflowTask) {
+func executeTestTask(taskResource *v1.WorkflowTask) error {
 	time.Sleep(EXEC_TIME_SECONDS * time.Second)
+	return nil
 }
 
 func taskScheduler(api clientv1.WorkflowTaskInterface, taskType string, replicas int) {
+	batchID := uuid.New()
+
 	for i := 0; i < replicas; i++ {
-		id := uuid.New()
-		taskName := "test-" + strconv.Itoa(i) + "-" + id.String()
+		taskName := "test-" + batchID.String() + "-" + strconv.Itoa(i)
 
 		task := &v1.WorkflowTask{
 			ObjectMeta: metav1.ObjectMeta{Name: taskName},

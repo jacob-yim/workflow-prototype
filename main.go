@@ -26,6 +26,7 @@ func main() {
 	time.Sleep(TIMEOUT_MINUTES * time.Minute)
 }
 
-func executeSampleTask(taskResource *v1.WorkflowTask) {
+func executeSampleTask(taskResource *v1.WorkflowTask) error {
 	time.Sleep(EXEC_TIME_SECONDS * time.Second)
+	return nil
 }
