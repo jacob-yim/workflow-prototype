@@ -35,13 +35,15 @@ func main() {
 	clientset := cs.NewForConfigOrDie(config)
 	api := clientset.WorkflowV1().WorkflowTasks("default")
 
-	executors := make([]app.Executor, 1)
-	executors[0] = app.Executor{Task: executeTestTask, TaskType: "testType", ThreadPoolSize: THREAD_POOL_SIZE}
+	executors := make([]app.Executor, 2)
+	executors[0] = app.Executor{Task: executeTestTask, TaskType: "testTypeA", ThreadPoolSize: THREAD_POOL_SIZE}
+	executors[1] = app.Executor{Task: executeTestTask, TaskType: "testTypeB", ThreadPoolSize: THREAD_POOL_SIZE}
 
 	app.Start(config, executors)
 
 	// start scheduler
-	go taskScheduler(api, "testType", TASKS)
+	go taskScheduler(api, "testTypeA", TASKS)
+	go taskScheduler(api, "testTypeB", TASKS)
 
 	time.Sleep(TIMEOUT_MINUTES * time.Minute)
 }
