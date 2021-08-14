@@ -1,4 +1,4 @@
-# workflow-prototype-go #
+# workflow-prototype #
 
 ## About ##
 
@@ -8,11 +8,11 @@ A Java implementation can be found [here](https://github.com/aupadhyay3/workflow
 
 ## Usage ##
 
-First, define a slice of Executors. The Executor struct contains Task, a user-defined function to be executed, TaskType, a string, and an integer ThreadPoolSize. This assigns tasks of type TaskType to an executor with a fixed thread pool of size ThreadPoolSize that runs Task.
+First, define a slice of Executors. The [Executor struct](pkg\app\workflow_app.go) contains Task, a user-defined function to be executed, TaskType, a string, and an integer ThreadPoolSize. This assigns tasks of type TaskType to an executor with a fixed thread pool of size ThreadPoolSize that runs Task.
 
     executors := make([]app.Executor, 1)
 	executors[0] = app.Executor{Task: executeTestTask, TaskType: "type", ThreadPoolSize: 3}
 
-app.Start() starts the workflow application by taking in a client-go config and the slice of executors.
+[app.Start()](pkg\app\workflow_app.go) starts the workflow application by taking in a client-go config and the slice of executors.
 
     app.Start(config, executors)
